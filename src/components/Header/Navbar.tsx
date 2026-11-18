@@ -19,6 +19,7 @@ export default function Navbar() {
   useEffect(() => {
     if (!menuOpen) return;
 
+    // user cannot scroll if the mobile drawer open
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     closeButtonRef.current?.focus();
