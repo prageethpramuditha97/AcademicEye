@@ -13,21 +13,44 @@ import Footer from "./components/Footer/Footer";
 export default function App() {
   return (
     <>
-      <header>
+      {/* Sticky Header */}
+      <header className="sticky top-0 z-[100] w-full">
         <TopBar />
         <Navbar />
       </header>
 
+      {/* Main Website Content */}
       <main>
-        <HeroSection />
-         <HowItWorks />
-        <AboutSection />
-        <Services />
-        <Testimonials />
-        <ClientPortal />
-        <ContactCTA/>
-        <Footer/>
+        <section id="home" className="scroll-mt-32">
+          <HeroSection />
+        </section>
+
+        <section id="how-it-works" className="scroll-mt-32">
+          <HowItWorks />
+        </section>
+
+        <section id="about" className="scroll-mt-32">
+          <AboutSection />
+        </section>
+
+        <section id="services" className="scroll-mt-32">
+          <Services />
+        </section>
+
+        <section id="testimonials" className="scroll-mt-32">
+          <Testimonials />
+        </section>
+
+        <section id="client-portal" className="scroll-mt-32">
+          <ClientPortal />
+        </section>
+
+        <section id="contact" className="scroll-mt-32">
+          <ContactCTA />
+        </section>
       </main>
+
+      <Footer />
     </>
   );
 }

@@ -3,24 +3,57 @@ import { useEffect, useRef, useState } from "react";
 import { KeyRound, Menu, X } from "lucide-react";
 
 const navLinks = [
-  { label: "Home", href: "#home" },
-  { label: "How It Works", href: "#how-it-works" },
-  { label: "About Us", href: "#about" },
-  { label: "Services", href: "#services" },
-  { label: "Why Choose Us", href: "#testimonials" },
-  { label: "Contact", href: "#contact" },
+  { name: "Home", id: "home" },
+  { name: "How It Works", id: "how-it-works" },
+  { name: "About Us", id: "about" },
+  { name: "Services", id: "services" },
+  { name: "Why Choose Us", id: "testimonials" },
+  { name: "Contact", id: "contact" },
 ];
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("home");
+
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
+  // Detect the currently visible homepage section
+  useEffect(() => {
+    const sections = navLinks
+      .map((link) => document.getElementById(link.id))
+      .filter((section): section is HTMLElement => section !== null);
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visibleSections = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort(
+            (a, b) =>
+              b.intersectionRatio - a.intersectionRatio
+          );
+
+        if (visibleSections.length > 0) {
+          setActiveSection(visibleSections[0].target.id);
+        }
+      },
+      {
+        rootMargin: "-90px 0px -55% 0px",
+        threshold: [0, 0.1, 0.25, 0.5],
+      }
+    );
+
+    sections.forEach((section) => observer.observe(section));
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Mobile menu keyboard and scroll handling
   useEffect(() => {
     if (!menuOpen) return;
 
-    // user cannot scroll if the mobile drawer open
     const previousOverflow = document.body.style.overflow;
+
     document.body.style.overflow = "hidden";
     closeButtonRef.current?.focus();
 
@@ -29,9 +62,9 @@ export default function Navbar() {
         setMenuOpen(false);
       }
 
-      // Keep keyboard focus inside the drawer.
       if (event.key === "Tab") {
         const drawer = closeButtonRef.current?.closest("aside");
+
         const elements = drawer?.querySelectorAll<HTMLElement>(
           'a[href], button:not([disabled])'
         );
@@ -59,56 +92,94 @@ export default function Navbar() {
     return () => {
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", handleKeyDown);
+
       triggerRef.current?.focus();
     };
   }, [menuOpen]);
 
+  // Close mobile menu when navigating
+  const handleNavigation = (id: string) => {
+    setActiveSection(id);
+    setMenuOpen(false);
+  };
+
   return (
     <>
-      {/* Main navigation */}
-      <nav className="relative z-30 border-b border-gray-200 bg-white">
+      {/* Fixed Main Navigation */}
+      <nav className="
+        relative
+        z-50
+        w-full
+        border-b
+        border-gray-200
+        bg-white
+      ">
         <div className="mx-auto flex h-[74px] max-w-[1280px] items-center justify-between gap-5 px-5 sm:px-10 lg:px-12">
 
-          {/* Official logo */}
-          <a href="#home" className="shrink-0">
+          {/* Official Logo */}
+          <a
+            href="#home"
+            onClick={() => handleNavigation("home")}
+            className="shrink-0"
+          >
             <img
               src="/images/academic-eye-logo.png"
-              alt="AcademicEye"
+              alt="AcademicEYE"
               className="h-[52px] w-auto max-w-[165px] object-contain"
             />
           </a>
 
-          {/* Desktop links */}
-          <div className="hidden items-center gap-6 lg:flex">
-            {navLinks.map((link, index) => (
+          {/* Desktop Navigation Links */}
+          <div className="hidden items-center gap-4 xl:gap-6 lg:flex">
+            {navLinks.map((link) => (
               <a
-                key={link.label}
-                href={link.href}
-                className={`relative py-2 text-[13px] font-bold transition hover:text-black ${
-                  index === 0
-                    ? "text-black"
-                    : "text-[#50483d]"
-                }`}
-              >
-                {link.label}
+                key={link.id}
+                href={`#${link.id}`}
+                onClick={() => handleNavigation(link.id)}
+                aria-current={
+                  activeSection === link.id ? "location" : undefined
+                }
+                className={`
+                  relative whitespace-nowrap px-2 py-2
+                  text-sm font-medium
+                  transition-colors duration-200
 
-                {index === 0 && (
-                  <span className="absolute right-0 bottom-0 left-0 h-[2px] bg-[#FFB900]" />
-                )}
+                  ${
+                    activeSection === link.id
+                      ? "text-[#A87500] after:absolute after:bottom-0 after:left-2 after:right-2 after:h-[2px] after:bg-[#FFB800]"
+                      : "text-gray-700 hover:text-[#A87500]"
+                  }
+                `}
+              >
+                {link.name}
               </a>
             ))}
           </div>
 
-          {/* Desktop login */}
+          {/* Desktop Login */}
           <a
-            href="#login"
-            className="hidden min-w-[110px] items-center justify-center gap-2 rounded-[9px] bg-[#FFB900] px-5 py-3 text-[13px] font-bold text-black shadow-sm transition hover:bg-[#E5A800] lg:flex"
+            href="/login"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="
+              hidden lg:flex
+              min-w-[110px]
+              items-center justify-center gap-2
+              rounded-[9px]
+              bg-[#FFB900]
+              px-5 py-3
+              text-[13px] font-bold text-black
+              shadow-sm
+              transition duration-200
+              hover:bg-[#E5A800]
+              hover:shadow-md
+            "
           >
             <KeyRound size={16} />
             Login
           </a>
 
-          {/* Mobile hamburger */}
+          {/* Mobile Hamburger */}
           <button
             ref={triggerRef}
             type="button"
@@ -116,23 +187,29 @@ export default function Navbar() {
             aria-label="Open navigation menu"
             aria-expanded={menuOpen}
             aria-controls="mobile-navigation"
-            className="rounded-md p-2 text-black lg:hidden"
+            className="
+              rounded-md p-2
+              text-black
+              transition
+              hover:bg-gray-100
+              lg:hidden
+            "
           >
             <Menu size={27} />
           </button>
         </div>
       </nav>
 
-      {/* Mobile backdrop */}
+      {/* Mobile Backdrop */}
       {menuOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/60 lg:hidden"
+          className="fixed inset-0 z-[110] bg-black/60 lg:hidden"
           onClick={() => setMenuOpen(false)}
           aria-hidden="true"
         />
       )}
 
-      {/* Left-side mobile drawer */}
+      {/* Mobile Navigation Drawer */}
       <aside
         id="mobile-navigation"
         role="dialog"
@@ -140,66 +217,86 @@ export default function Navbar() {
         aria-label="Mobile navigation"
         inert={!menuOpen}
         className={`
-          fixed top-0 left-0 z-50
-          flex h-dvh w-[50vw] flex-col
-          overflow-y-auto bg-white
-          shadow-2xl
+          fixed left-0 top-0 z-[120]
+          flex h-dvh w-[80vw] max-w-[320px]
+          flex-col overflow-y-auto
+          bg-white shadow-2xl
           transition-transform duration-300 ease-in-out
           lg:hidden
+
           ${menuOpen ? "translate-x-0" : "-translate-x-full"}
         `}
       >
-        {/* Drawer header */}
-        <div className="flex items-center justify-between border-b border-gray-200 px-3 py-5">
-          <span className="text-sm font-bold text-black">
-            Menu
-          </span>
+
+        {/* Drawer Header */}
+        <div className="flex items-center justify-between border-b border-gray-200 px-4 py-5">
+
+          <img
+            src="/images/academic-eye-logo.png"
+            alt="AcademicEYE"
+            className="h-10 w-auto max-w-[140px] object-contain"
+          />
 
           <button
             ref={closeButtonRef}
             type="button"
             onClick={() => setMenuOpen(false)}
             aria-label="Close navigation menu"
-            className="rounded-md p-1 text-black hover:bg-gray-100"
+            className="rounded-md p-2 text-black transition hover:bg-gray-100"
           >
-            <X size={21} />
+            <X size={22} />
           </button>
         </div>
 
-        {/* Navigation links */}
-        <div className="flex flex-1 flex-col gap-1 px-2 py-5">
-          {navLinks.map((link, index) => (
+        {/* Mobile Navigation Links */}
+        <div className="flex flex-1 flex-col gap-1 px-3 py-5">
+
+          {navLinks.map((link) => (
             <a
-              key={link.label}
-              href={link.href}
-              onClick={() => setMenuOpen(false)}
+              key={link.id}
+              href={`#${link.id}`}
+              onClick={() => handleNavigation(link.id)}
+              aria-current={
+                activeSection === link.id ? "location" : undefined
+              }
               className={`
-                rounded-lg px-3 py-3 text-[12px]
-                font-semibold leading-5 transition
-                hover:bg-[#FFF8E8]
+                rounded-lg px-4 py-3
+                text-sm font-semibold
+                transition-colors duration-200
+
                 ${
-                  index === 0
-                    ? "bg-[#FFF8E8] text-[#A87300]"
-                    : "text-gray-800"
+                  activeSection === link.id
+                    ? "bg-[#FFF8E8] text-[#A87500]"
+                    : "text-gray-800 hover:bg-[#FFF8E8] hover:text-[#A87500]"
                 }
               `}
             >
-              {link.label}
+              {link.name}
             </a>
           ))}
+
         </div>
 
-        {/* Drawer bottom */}
-        <div className="border-t border-gray-200 p-3">
+        {/* Mobile Login */}
+        <div className="border-t border-gray-200 p-4">
           <a
-            href="#login"
+            href="/login"
+            target="_blank"
+            rel="noopener noreferrer"
             onClick={() => setMenuOpen(false)}
-            className="flex items-center justify-center gap-2 rounded-lg bg-[#FFB900] px-2 py-3 text-[12px] font-bold text-black"
+            className="
+              flex items-center justify-center gap-2
+              rounded-lg bg-[#FFB900]
+              px-4 py-3
+              text-sm font-bold text-black
+              transition hover:bg-[#E5A800]
+            "
           >
-            <KeyRound size={15} />
+            <KeyRound size={16} />
             Login
           </a>
         </div>
+
       </aside>
     </>
   );
