@@ -4,10 +4,10 @@ import { KeyRound, Menu, X } from "lucide-react";
 
 const navLinks = [
   { label: "Home", href: "#home" },
+  { label: "How It Works", href: "#how-it-works" },
   { label: "About Us", href: "#about" },
   { label: "Services", href: "#services" },
-  { label: "How It Works", href: "#how-it-works" },
-  { label: "Why Choose Us", href: "#why-us" },
+  { label: "Why Choose Us", href: "#testimonials" },
   { label: "Contact", href: "#contact" },
 ];
 
